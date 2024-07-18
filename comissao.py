@@ -75,10 +75,10 @@ def branch_and_bound(E, F, S, OptP, OptX):
             OptX[0] = E[:]
     else:
         for x in F:
-            newE = E + [x]
-            newF = F[F.index(x) + 1:]
-            if FEASIBILITY_CUT or Bdada(newE, S) < OptP[0]:
-                branch_and_bound(newE, newF, S, OptP, OptX)
+            new_E = E + [x]
+            new_F = F[F.index(x) + 1:]
+            if FEASIBILITY_CUT or Bdada(new_E, S) < OptP[0]:
+                branch_and_bound(new_E, new_F, S, OptP, OptX)
 
 # FUnção wrapper pro Branch&Bound
 def minimum_representative(S, candidates):
