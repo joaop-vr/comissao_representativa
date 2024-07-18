@@ -73,7 +73,7 @@ def branch_and_bound(E, F, S, OptP, OptX):
             if FEASIBILITY_CUT or Bdada(newE, S) < OptP[0]:
                 branch_and_bound(newE, newF, S, OptP, OptX)
 
-def find_minimum_representative_set(S, candidates):
+def minimum_representative(S, candidates):
     OptP = [float('inf')]
     OptX = [[]]
     E = []
@@ -88,7 +88,7 @@ def main():
     
     setup_cuts()
     S, candidates = read_input()
-    result = find_minimum_representative_set(S, candidates)
+    result = minimum_representative(S, candidates)
     if result == "Inviavel":
         print(result)
     else:
