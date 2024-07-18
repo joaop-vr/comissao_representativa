@@ -13,7 +13,7 @@ def setup_cuts():
         print(err)
         sys.exit(2)
 
-    for o, a in opts:
+    for o in opts:
         global FEASIBILITY_CUT, OPTIMALITY_CUT
         if o == "-f":
             FEASIBILITY_CUT = True
@@ -34,20 +34,14 @@ def read_input():
     S = set(range(1, l + 1))
     candidates = []
 
-    # for _ in range(n):
-    #     s = int(data[index])
-    #     index += 1
-    #     groups = set(int(data[index + i]) for i in range(s))
-    #     index += s
-    #     candidates.append(groups)
+    print(f"l: {l} n:{n}")
     for i in range(n):
         candidate = []
         candidate_rep = int(data[index])
-        print(f"candidato {i+1} está em {candidate_rep} grupos.")
+        index += 1 
         for j in range(candidate_rep):
             candidate.append(int(data[index]))
             index += 1
-        index += candidate_rep
         candidates.append(candidate)
 
     #Debug
@@ -66,7 +60,7 @@ def Bdada(E, S):
     else:
         return len(E) + 1
 
-def branch_and_bound(E, F, S, OptP, OptX, FEASIBILITY_CUT, OPTIMALITY_CUT):
+def branch_and_bound(E, F, S, OptP, OptX):
     if set().union(*E) == S:
         current_profit = profit(E)
         if current_profit < OptP[0]:
@@ -77,14 +71,14 @@ def branch_and_bound(E, F, S, OptP, OptX, FEASIBILITY_CUT, OPTIMALITY_CUT):
             newE = E + [x]
             newF = F[F.index(x) + 1:]
             if FEASIBILITY_CUT or Bdada(newE, S) < OptP[0]:
-                branch_and_bound(newE, newF, S, OptP, OptX, FEASIBILITY_CUT, OPTIMALITY_CUT)
+                branch_and_bound(newE, newF, S, OptP, OptX)
 
-def find_minimum_representative_set(S, candidates, FEASIBILITY_CUT, OPTIMALITY_CUT):
+def find_minimum_representative_set(S, candidates):
     OptP = [float('inf')]
     OptX = [[]]
     E = []
     F = candidates
-    branch_and_bound(E, F, S, OptP, OptX, FEASIBILITY_CUT, OPTIMALITY_CUT)
+    branch_and_bound(E, F, S, OptP, OptX)
     if OptP[0] == float('inf'):
         return "Inviavel"
     else:
@@ -93,15 +87,14 @@ def find_minimum_representative_set(S, candidates, FEASIBILITY_CUT, OPTIMALITY_C
 def main():
     
     setup_cuts()
-
     S, candidates = read_input()
-    # result = find_minimum_representative_set(S, candidates, FEASIBILITY_CUT, OPTIMALITY_CUT)
-    # if result == "Inviavel":
-    #     print(result)
-    # else:
-    #     indices = [candidates.index(groups) + 1 for groups in result]
-    #     indices.sort()
-    #     print(" ".join(map(str, indices)))
+    result = find_minimum_representative_set(S, candidates)
+    if result == "Inviavel":
+        print(result)
+    else:
+        indices = [candidates.index(groups) + 1 for groups in result]
+        indices.sort()
+        print(" ".join(map(str, indices)))
 
 if __name__ == "__main__":
     main()
