@@ -46,7 +46,7 @@ def read_input():
 
     #Debug
     print(f"S: {S}")
-    print(f"C: {candidates}")
+    print(f"F: {candidates}")
 
     return S, candidates
 
