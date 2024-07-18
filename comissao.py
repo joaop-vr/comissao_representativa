@@ -53,15 +53,22 @@ def read_input():
 def profit(X):
     return len(X)
 
+# Realiza a união sem repetição dos conjuntos de E
+def make_union(E):
+    output = set()
+    for group in E:
+        output.update(group)
+    return output
+
+# Função limitante do professor
 def Bdada(E, S):
-    covered_groups = set().union(*E)
-    if covered_groups == S:
+    if make_union(E) == S:
         return len(E)
     else:
         return len(E) + 1
 
 def branch_and_bound(E, F, S, OptP, OptX):
-    if set().union(*E) == S:
+    if make_union(E) == S:
         current_profit = profit(E)
         if current_profit < OptP[0]:
             OptP[0] = current_profit
@@ -73,6 +80,7 @@ def branch_and_bound(E, F, S, OptP, OptX):
             if FEASIBILITY_CUT or Bdada(newE, S) < OptP[0]:
                 branch_and_bound(newE, newF, S, OptP, OptX)
 
+# FUnção wrapper pro Branch&Bound
 def minimum_representative(S, candidates):
     OptP = [float('inf')]
     OptX = [[]]
@@ -85,7 +93,6 @@ def minimum_representative(S, candidates):
         return OptX[0]
 
 def main():
-    
     setup_cuts()
     S, candidates = read_input()
     result = minimum_representative(S, candidates)
