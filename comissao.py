@@ -1,8 +1,9 @@
 import sys
 import getopt
 
-FEASIBILITY_CUT = False
-OPTIMALITY_CUT = False
+GUIVEN_B = False
+FEASIBILITY_CUT = True
+OPTIMALITY_CUT = True
 
 # Analisa entrada do usuário para ver se os cortes de
 # viabilidade e otimalidade estão ativos ou não
@@ -13,12 +14,19 @@ def setup_cuts():
         print(err)
         sys.exit(2)
 
-    for o in opts:
-        global FEASIBILITY_CUT, OPTIMALITY_CUT
-        if o == "-f":
-            FEASIBILITY_CUT = True
-        elif o == "-o":
-            OPTIMALITY_CUT = True
+    if len(opts) != 0:
+        opts = opts.pop()
+        for opt in opts:
+            global FEASIBILITY_CUT, OPTIMALITY_CUT, GUIVEN_B
+            if opt == '-f':
+                FEASIBILITY_CUT = False
+            elif opt == "-o":
+                OPTIMALITY_CUT = False
+            elif opt == "-a":
+                GUIVEN_B = True
+    
+    print(f"CORTE VIABILIDADE: {FEASIBILITY_CUT}")
+    print(f"CORTE OTIMALIDADE: {OPTIMALITY_CUT}")
 
 # Lê entrada do usuário para guardar informações
 # sobre os grupos (S) e candidatos (candidates)
@@ -77,7 +85,7 @@ def branch_and_bound(E, F, S, OptP, OptX):
         for x in F:
             new_E = E + [x]
             new_F = F[F.index(x) + 1:]
-            if FEASIBILITY_CUT or Bdada(new_E, S) < OptP[0]:
+            if (FEASIBILITY_CUT or Bdada(new_E, S) < OptP[0]) and (OPTIMALITY_CUT or Bdada(new_E, S) < OptP[0]):
                 branch_and_bound(new_E, new_F, S, OptP, OptX)
 
 # FUnção wrapper pro Branch&Bound
