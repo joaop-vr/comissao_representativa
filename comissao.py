@@ -9,24 +9,23 @@ OPTIMALITY_CUT = True
 # viabilidade e otimalidade estão ativos ou não
 def setup_cuts():
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "fo")
+        opts, args = getopt.getopt(sys.argv[1:], "afo")
     except getopt.GetoptError as err:
         print(err)
         sys.exit(2)
 
-    if len(opts) != 0:
-        opts = opts.pop()
-        for opt in opts:
-            global FEASIBILITY_CUT, OPTIMALITY_CUT, GUIVEN_B
-            if opt == '-f':
-                FEASIBILITY_CUT = False
-            elif opt == "-o":
-                OPTIMALITY_CUT = False
-            elif opt == "-a":
-                GUIVEN_B = True
+    global FEASIBILITY_CUT, OPTIMALITY_CUT, GUIVEN_B
+    for opt, arg in opts:
+        if opt == '-f':
+            FEASIBILITY_CUT = False
+        elif opt == '-o':
+            OPTIMALITY_CUT = False
+        elif opt == '-a':
+            GUIVEN_B = True
     
     print(f"CORTE VIABILIDADE: {FEASIBILITY_CUT}")
     print(f"CORTE OTIMALIDADE: {OPTIMALITY_CUT}")
+    print(f"GUIVEN_B: {GUIVEN_B}")
 
 # Lê entrada do usuário para guardar informações
 # sobre os grupos (S) e candidatos (candidates)
@@ -69,23 +68,54 @@ def make_union(E):
     return output
 
 # Função limitante do professor
-def Bdada(E, S):
+def B_simple(E, S):
     if make_union(E) == S:
         return len(E)
     else:
         return len(E) + 1
 
+# Nossa função limitante
+def B_difference(E, S):
+    groups_represented = make_union(E)
+    remaining_groups = S - groups_represented
+    if not remaining_groups:
+        return len(E)
+    return len(E) + len(remaining_groups)
+
+# Função de gerenciamento entre versões de função limitante
+def set_B(E,S):
+    if GUIVEN_B:
+        print("Versão do professor!")
+        return B_simple(E,S)
+    else:
+        print("Nossa versão!")
+        return B_difference(E,S)
+
 def branch_and_bound(E, F, S, OptP, OptX):
+    print(f"E:[{make_union(E)}] == S:[{S}] ?")
     if make_union(E) == S:
         current_profit = profit(E)
+        print(f"current_profit: {current_profit} < OptP[0]: {OptP[0]} ?")
+        print(f"antigo OptP[0]: [{OptP[0]}]")
+        print(f"antigo OptX[0]: [{OptX[0]}]")
         if current_profit < OptP[0]:
             OptP[0] = current_profit
             OptX[0] = E[:]
+            print(f"novo OptP[0]: [{OptP[0]}]")
+            print(f"novo OptX[0]: [{OptX[0]}]")
     else:
+        print("entrou no else")
+        print(f"antigo E: [{E}]")
+        print(f"antigo F: [{F}]")
         for x in F:
-            new_E = E + [x]
+            print(f"Estamos analisando {x} dentre F:[{F}]")
+            new_E = E + F[:F.index(x)+1]
             new_F = F[F.index(x) + 1:]
-            if (FEASIBILITY_CUT or Bdada(new_E, S) < OptP[0]) and (OPTIMALITY_CUT or Bdada(new_E, S) < OptP[0]):
+            print(f"novo E: [{new_E}]")
+            print(f"novo F: [{new_F}]")
+            #if (FEASIBILITY_CUT or set_B(new_E, S) < OptP[0]) and (OPTIMALITY_CUT or set_B(new_E, S) < OptP[0]):
+            print(f"B: {set_B(new_E, S)} < OptP[0]: {OptP[0]} ? {set_B(new_E, S) < OptP[0]}")
+            if set_B(new_E, S) < OptP[0]:
                 branch_and_bound(new_E, new_F, S, OptP, OptX)
 
 # FUnção wrapper pro Branch&Bound
