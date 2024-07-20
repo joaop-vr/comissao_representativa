@@ -1,9 +1,11 @@
 import sys
 import getopt
+import time
 
 GUIVEN_B = False
 FEASIBILITY_CUT = True
 OPTIMALITY_CUT = True
+COUNT = 0
 
 # Analisa entrada do usuário para ver se os cortes de
 # viabilidade e otimalidade estão ativos ou não
@@ -22,10 +24,6 @@ def setup_cuts():
             OPTIMALITY_CUT = False
         elif opt == '-a':
             GUIVEN_B = True
-    
-    print(f"CORTE VIABILIDADE: {FEASIBILITY_CUT}")
-    print(f"CORTE OTIMALIDADE: {OPTIMALITY_CUT}")
-    print(f"GUIVEN_B: {GUIVEN_B}")
 
 # Lê entrada do usuário para guardar informações
 # sobre os grupos (S) e candidatos (candidates)
@@ -41,7 +39,6 @@ def read_input():
     S = set(range(1, l + 1))
     candidates = []
 
-    print(f"l: {l} n:{n}")
     for i in range(n):
         candidate = []
         candidate_rep = int(data[index])
@@ -50,10 +47,6 @@ def read_input():
             candidate.append(int(data[index]))
             index += 1
         candidates.append(candidate)
-
-    #Debug
-    print(f"S: {S}")
-    print(f"F: {candidates}")
 
     return S, candidates
 
@@ -74,29 +67,37 @@ def B_simple(E, S):
     else:
         return len(E) + 1
 
-# Nossa função limitante
-def B_average(E, S):
-    print("Nossa versão! [média]")
-    covered_groups = set().union(*E)
+def B_min_candidate(E, S, F):
+    covered_groups = make_union(E)
     remaining_groups = S - covered_groups
+
     if not remaining_groups:
         return len(E)
-    if E:
-        average_coverage = len(covered_groups) / len(E)
+
+    # Econtra o maior lucro que podemos obter desse
+    # conjunto de candidatos
+    max_profit = 0
+    for f in F:
+        coverage = len(set(f) & remaining_groups)
+        if coverage > max_profit:
+            max_profit = coverage
+
+    if max_profit == 0: # Evitar divisão por zero
+        estimated_additional_candidates = len(remaining_groups)
     else:
-        average_coverage = 1  # Evitar divisão por zero no início
-    estimated_additional_candidates = len(remaining_groups) / average_coverage
-    return len(E) + int(estimated_additional_candidates)
+        estimated_additional_candidates = (len(remaining_groups) + max_profit - 1) // max_profit # Tecnica de arredondamentp
+    return len(E) + estimated_additional_candidates
 
 # Função de gerenciamento entre versões de função limitante
 def set_B(E,S, F):
     if GUIVEN_B:
-        print("Versão do professor!")
         return B_simple(E,S)
     else:
-        return B_average(E,S)
+        return B_min_candidate(E,S,F)
 
 def branch_and_bound(E, F, S, OptP, OptX):
+    global COUNT 
+    COUNT += 1
     if make_union(E) == S:
         current_profit = profit(E)
         if current_profit < OptP[0]:
@@ -104,18 +105,25 @@ def branch_and_bound(E, F, S, OptP, OptX):
             OptX[0] = E[:]
     else:
         for x in F:
-            new_E = E + [x]#F[:F.index(x)+1]
+            new_E = E + [x]
             new_F = F[F.index(x) + 1:]
-            if set_B(new_E, S) < OptP[0]:
-                branch_and_bound(new_E, new_F, S, OptP, OptX)
+            limit_value = set_B(new_E, S, new_F)
+            if (FEASIBILITY_CUT and limit_value <= OptP[0]) or not FEASIBILITY_CUT:
+                if (OPTIMALITY_CUT and limit_value < OptP[0]) or not OPTIMALITY_CUT:
+                    branch_and_bound(new_E, new_F, S, OptP, OptX)
 
 # FUnção wrapper pro Branch&Bound
-def minimum_representative(S, candidates):
+def minimum_group(S, candidates):
     OptP = [float('inf')]
     OptX = [[]]
     E = []
     F = candidates
+    start_time = time.time()
     branch_and_bound(E, F, S, OptP, OptX)
+    end_time = time.time()
+    total_time = end_time - start_time
+    print(f"Levou: {format(total_time, '.2e')} segundos")
+    print(f"Nós percorridos: {COUNT}")
     if OptP[0] == float('inf'):
         return "Inviavel"
     else:
@@ -124,7 +132,7 @@ def minimum_representative(S, candidates):
 def main():
     setup_cuts()
     S, candidates = read_input()
-    result = minimum_representative(S, candidates)
+    result = minimum_group(S, candidates)
     if result == "Inviavel":
         print(result)
     else:
