@@ -122,8 +122,10 @@ def minimum_group(S, candidates):
     branch_and_bound(E, F, S, OptP, OptX)
     end_time = time.time()
     total_time = end_time - start_time
-    print(f"Levou: {format(total_time, '.2e')} segundos")
-    print(f"Nós percorridos: {COUNT}")
+    # Nós percorridos: 
+    print(f"{COUNT}")
+    # Tempo gasto
+    print(f"{format(total_time, '.2e')}")
     if OptP[0] == float('inf'):
         return "Inviavel"
     else:
