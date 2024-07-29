@@ -1,17 +1,24 @@
-# Define o interpretador para o Makefile
-SHELL := /bin/bash
+# Nome do arquivo Python
+PYTHON_FILE=comissao.py
 
-# Nome do script Python
-SCRIPT = comissao.py
+# Nome do executável gerado
+EXECUTABLE=comissao
+
+# Caminho do PyInstaller
+PYINSTALLER=pyinstaller
+
+# Diretório de saída
+DIST_DIR=dist
 
 # Alvo padrão
-all: run
+all: build
 
-# Alvo para rodar o script
-run:
-	@chmod +x $(SCRIPT)
-	@./$(SCRIPT)
+# Alvo para construir o executável
+build:
+	$(PYINSTALLER) --onefile $(PYTHON_FILE)
 
-# Alvo para limpar arquivos gerados (se aplicável)
+# Alvo para limpar arquivos gerados
 clean:
-	@echo "Nada para limpar no momento."
+	rm -rf $(DIST_DIR) $(EXECUTABLE).spec build
+
+.PHONY: all build clean
