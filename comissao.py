@@ -28,11 +28,11 @@ def setup_cuts():
 # Lê entrada do usuário para guardar informações
 # sobre os grupos (S) e candidatos (candidates)
 def read_input():
-    data = input_data = sys.stdin.read().strip().split()
+    data = sys.stdin.read().strip().split()
 
     index = 0
     l = int(data[index])
-    index = 1
+    index += 1
     n = int(data[index])
     index += 1
 
@@ -74,7 +74,7 @@ def B_min_candidate(E, S, F):
     if not remaining_groups:
         return len(E)
 
-    # Econtra o maior lucro que podemos obter desse
+    # Encontra o maior lucro que podemos obter desse
     # conjunto de candidatos
     max_profit = 0
     for f in F:
@@ -85,15 +85,15 @@ def B_min_candidate(E, S, F):
     if max_profit == 0: # Evitar divisão por zero
         estimated_additional_candidates = len(remaining_groups)
     else:
-        estimated_additional_candidates = (len(remaining_groups) + max_profit - 1) // max_profit # Tecnica de arredondamentp
+        estimated_additional_candidates = (len(remaining_groups) + max_profit - 1) // max_profit # Técnica de arredondamento
     return len(E) + estimated_additional_candidates
 
 # Função de gerenciamento entre versões de função limitante
-def set_B(E,S, F):
+def set_B(E, S, F):
     if GUIVEN_B:
-        return B_simple(E,S)
+        return B_simple(E, S)
     else:
-        return B_min_candidate(E,S,F)
+        return B_min_candidate(E, S, F)
 
 def branch_and_bound(E, F, S, OptP, OptX):
     global COUNT 
@@ -112,7 +112,7 @@ def branch_and_bound(E, F, S, OptP, OptX):
                 if (OPTIMALITY_CUT and limit_value < OptP[0]) or not OPTIMALITY_CUT:
                     branch_and_bound(new_E, new_F, S, OptP, OptX)
 
-# FUnção wrapper pro Branch&Bound
+# Função wrapper para Branch&Bound
 def minimum_group(S, candidates):
     OptP = [float('inf')]
     OptX = [[]]
@@ -122,10 +122,9 @@ def minimum_group(S, candidates):
     branch_and_bound(E, F, S, OptP, OptX)
     end_time = time.time()
     total_time = end_time - start_time
-    # Nós percorridos: 
-    print(f"{COUNT}")
-    # Tempo gasto
-    print(f"{format(total_time, '.2e')}")
+    # Relatório
+    sys.stderr.write(f"{COUNT} {format(total_time, '.2e')}")
+    
     if OptP[0] == float('inf'):
         return "Inviavel"
     else:
