@@ -1,43 +1,17 @@
-# Variáveis
-PYTHON = python3
-PIP = pip3
-VENV = venv
-VENV_BIN = $(VENV)/bin
-ACTIVATE = . $(VENV_BIN)/activate
+# Define o interpretador para o Makefile
+SHELL := /bin/bash
+
+# Nome do script Python
 SCRIPT = comissao.py
 
-# Regras
-.PHONY: all venv install requirements test lint clean run
+# Alvo padrão
+all: run
 
-all: install
-
-# Cria um ambiente virtual
-venv:
-	$(PYTHON) -m venv $(VENV)
-
-# Instala as dependências
-install: venv
-	$(ACTIVATE) && $(PIP) install -r requirements.txt
-
-# Instala as dependências (caso o requirements.txt tenha sido alterado)
-requirements: venv
-	$(ACTIVATE) && $(PIP) install -r requirements.txt
-
-# Executa os testes
-test:
-	$(ACTIVATE) && pytest
-
-# Executa o linter
-lint:
-	$(ACTIVATE) && flake8 $(SCRIPT)
-
-# Limpa arquivos temporários
-clean:
-	find . -name '*.pyc' -delete
-	find . -name '__pycache__' -delete
-	rm -rf $(VENV)
-
-# Roda o script principal
+# Alvo para rodar o script
 run:
-	$(ACTIVATE) && $(PYTHON) $(SCRIPT)
+	@chmod +x $(SCRIPT)
+	@./$(SCRIPT)
 
+# Alvo para limpar arquivos gerados (se aplicável)
+clean:
+	@echo "Nada para limpar no momento."
